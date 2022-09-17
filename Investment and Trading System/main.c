@@ -2,14 +2,8 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-
-/* Option 1 */
-
-/* Option 3 */
-
-
-/* Option 4 */
-
+#define FILENAME_SIZE 1024
+#define MAX_LINE 2048
 
 /* Option 5 */
 float average_buy_price_calculator(float total_money_invested, int total_unit_purchased){
@@ -67,10 +61,12 @@ int main(){
     float total_money_invested, average_buy_price, lot_size, total_amount_risk, risk_per_trade;
     float current_price_per_usd, price_in_usd;
     char select_again_input[10];
+    FILE *fpointer;
+    FILE *temp_fp;
 
     /* Option 2 */
     int investment_list_user_response, number_of_new_investments;
-    FILE *fpointer;
+    float amount_bought;
 
     /* Option 7 */
     float leverage;
@@ -86,12 +82,11 @@ int main(){
     printf("1. Display the list of all investments.\n");
     printf("2. Edit investment list.\n");
     printf("3. Delete an existing investment.\n");
-    printf("4. Find a specific investment.\n");
-    printf("5. Average Price calculator.\n");
-    printf("6. Lot size calculator.\n");
-    printf("7. Max leverage calculator.\n");
-    printf("8. Crypto position size calculator.\n");
-    printf("9. Terminate program.\n");
+    printf("4. Average Price calculator.\n");
+    printf("5. Lot size calculator.\n");
+    printf("6. Max leverage calculator.\n");
+    printf("7. Crypto position size calculator.\n");
+    printf("8. Terminate program.\n");
     printf("\nSelecting option: ");
     scanf("%d", &user_input_option);
 
@@ -99,8 +94,24 @@ int main(){
         case 1: // Display list of all investments.
             system("cls");
             printf("================ OPTION NUMBER %d ================\n", user_input_option);
+            FILE *fpointer = fopen("investments.txt", "r");
+            char line[1000];
+            while(fgets(line, sizeof(line), fpointer) != NULL){
+                printf("\n%s", line);
+            }
 
-            goto option;
+            fclose(fpointer);
+            printf("\n================= PROCESS DONE =================\n");
+            printf("\nSelect again?");
+            printf("\nYes/No: ");
+            scanf("%s", &select_again_input);
+            if (strcmp(select_again_input, "Yes") == 0) {
+                system("cls");
+                goto option;
+            }
+            else {
+                goto terminate;
+            }
             break;
         case 2: // Edit investment list.
             system("cls");
@@ -109,11 +120,12 @@ int main(){
             printf("2. Add new investments.\n");
             printf("\nOption: ");
             scanf("%d", &investment_list_user_response);
-            if (investment_list_user_response == 1) {
-                printf("Number of new investments: ");
-                scanf("%d", &number_of_new_investments);
-                FILE *fpointer = fopen("investments.txt", "w"); // Declaration and open file
+            printf("Number of new investments: ");
+            scanf("%d", &number_of_new_investments);
+            if (investment_list_user_response == 1) { // Rewrite a new list of investments
+                FILE *fpointer = fopen("investments.txt", "w"); // Declaration and open file for writing
 
+                fprintf(fpointer, "Name\tAverage Buy Price\tAmount Bought\tValue\n");
                 for (int i = 0; i < number_of_new_investments; i++) {
                     char investment_name[13] = {0}; // Resets the string to empty
                     float investment_value = 0; // Resets the float value to empty
@@ -121,15 +133,54 @@ int main(){
                     printf("\n-------------- INVESTMENT NUMBER %d --------------\n", i + 1);
                     printf("Name of Investment: ");
                     scanf("%s", &investment_name);
+                    printf("Average buy price: ");
+                    scanf("%f", &average_buy_price);
+                    printf("Amount bought: ");
+                    scanf("%f", &amount_bought);
                     printf("Value of Investment: ");
                     scanf("%f", &investment_value);
-                    fprintf(fpointer, "%s \t %.2f\n", investment_name, investment_value);
+                    if (average_buy_price < 9999) { // For small cap coins that have valuation lesser than 10k
+                            fprintf(fpointer, "%s\t%.2f\t\t\t%.4f\t\t%.2f\n", investment_name, average_buy_price, amount_bought, investment_value);
+                    }
+                    else if (average_buy_price > 9999) { // For big cap coins like Bitcoin
+                            fprintf(fpointer, "%s\t%.2f\t\t%.4f\t\t%.2f\n", investment_name, average_buy_price, amount_bought, investment_value);
+                    }
                 }
-
                 fclose(fpointer);
             }
-            else if (investment_list_user_response == 2) {
-                printf("Hello World.");
+            else if (investment_list_user_response == 2) { // Appends the next investment at the end
+                    FILE *fpointer = fopen("investments.txt", "r"); // Calculate the number of investments
+                    int number_of_lines = 0;
+                    char c;
+                    for (c = getc(fpointer); c != EOF; c = getc(fpointer)) { // Keeps getting character from the fpointer until it reaches EOF.
+                        if (c == '\n') {
+                            number_of_lines += 1;
+                        }
+                    }
+                    fclose(fpointer);
+
+                    FILE *fpointer2 = fopen("investments.txt", "a"); // For appending only (Add at the end of the file)
+                    for (int i = 0; i < number_of_new_investments; i++) {
+                        char investment_name[13] = {0};
+                        float investment_value = 0;
+
+                        printf("\n-------------- INVESTMENT NUMBER %d --------------\n", i + 1);
+                        printf("Name of Investment: ");
+                        scanf("%s", &investment_name);
+                        printf("Average buy price: ");
+                        scanf("%f", &average_buy_price);
+                        printf("Amount bought: ");
+                        scanf("%f", &amount_bought);
+                        printf("Value of Investment: ");
+                        scanf("%f", &investment_value);
+                        if (average_buy_price < 9999) {
+                            fprintf(fpointer2, "%s\t%.2f\t\t\t%.4f\t\t%.2f\n", investment_name, average_buy_price, amount_bought, investment_value);
+                        }
+                        else if (average_buy_price > 9999) {
+                            fprintf(fpointer2, "%s\t%.2f\t\t%.4f\t\t%.2f\n", investment_name, average_buy_price, amount_bought, investment_value);
+                        }
+                    }
+                fclose(fpointer2);
             }
             printf("\n================= PROCESS DONE =================\n");
             printf("\nSelect again?");
@@ -146,12 +197,52 @@ int main(){
         case 3: // Delete an existing investment.
             system("cls");
             printf("================ OPTION NUMBER %d ================\n", user_input_option);
+            int delete_investment_number;
+            char filename[1024], new_filename[1024];
+
+            printf("Investment number to be deleted: ");
+            scanf("%d", &delete_investment_number);
+
+            strcpy(new_filename, "new_");
+            strcat(new_filename, "investments.txt");
+
+            fpointer = fopen("investments.txt", "r");
+            temp_fp = fopen(new_filename, "w");
+            int continue_reading = 0; // true to keep reading at first
+            int current_line = 1;
+
+            do {
+                char buffer[2048] = {};
+
+                if (feof(fpointer) != 0) { // Already reached end of file
+                    continue_reading = 1;
+                }
+                fgets(buffer, 2048, fpointer);
+                if (current_line != delete_investment_number + 1) { // Prints if it's not the targeted string to be deleted
+                    fputs(buffer, temp_fp);
+                }
+                current_line++;
+            } while (continue_reading == 0);
+
+            fclose(fpointer);
+            fclose(temp_fp);
+
+            remove("investments.txt");
+            rename(new_filename, "investments.txt");
+
+            printf("\n================= PROCESS DONE =================\n");
+            printf("\nSelect again?");
+            printf("\nYes/No: ");
+            scanf("%s", &select_again_input);
+            if (strcmp(select_again_input, "Yes") == 0) {
+                system("cls");
+                goto option;
+            }
+            else {
+                goto terminate;
+            }
             break;
-        case 4: // Find a specific investment.
-            system("cls");
-            printf("================ OPTION NUMBER %d ================\n", user_input_option);
-            break;
-        case 5: // Average buy price calculator
+        case 4: // Average buy price calculator
             system("cls");
             printf("================ OPTION NUMBER %d ================\n", user_input_option);
             printf("Total money invested: ");
@@ -173,7 +264,7 @@ int main(){
                 goto terminate;
             }
             break;
-        case 6: // Lot size calculator
+        case 5: // Lot size calculator
             system("cls");
             printf("================ OPTION NUMBER %d ================\n", user_input_option);
             printf("Is the quote pair in USD?\n");
@@ -212,7 +303,7 @@ int main(){
                 goto terminate;
             }
             break;
-        case 7: // Leverage calculator
+        case 6: // Leverage calculator
             system("cls");
             printf("================ OPTION NUMBER %d ================\n", user_input_option);
             printf("Entry price: ");
@@ -235,7 +326,7 @@ int main(){
                 goto terminate;
             }
             break;
-        case 8: // Crypto position size calculator
+        case 7: // Crypto position size calculator
             system("cls");
             printf("================ OPTION NUMBER %d ================\n", user_input_option);
             printf("Entry price, Stop Loss, Leverage: ");
@@ -269,7 +360,7 @@ int main(){
                 goto terminate;
             }
             break;
-        case 9: // Terminate program
+        case 8: // Terminate program
             terminate:
             system("cls");
             printf("=================================================\n");
