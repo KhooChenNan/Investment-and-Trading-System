@@ -30,7 +30,7 @@ To run the project, simply click main.c and make sure a C compiler (e.g. CodeBlo
 
 <details>
 <summary>5. Lot size calculator</summary>
-<p>Content 1</p>
+<p>FOREX lot size calculator based on the percentage risked.</p>
 </details>
 
 <details>
